@@ -114,7 +114,8 @@ function resetInputs() {
     document.getElementById('dewpoint_850').value = 15;
 
     document.getElementById('resultsSection').style.display = 'none';
-    document.getElementById('dataTimestamp').classList.remove('active');
+    const timestampEl = document.getElementById('timestamp');
+    if (timestampEl) timestampEl.classList.remove('active');
 }
 
 /**
@@ -130,21 +131,17 @@ async function fetchLiveData() {
     }
 
     // Show loading indicator
-    const loadingIndicator = document.getElementById('loadingIndicator');
-    const fetchBtn = document.getElementById('fetchDataBtn');
-    const timestampDiv = document.getElementById('dataTimestamp');
+    const loading = document.getElementById('loading');
+    const fetchBtn = document.getElementById('fetchBtn');
+    const timestampDiv = document.getElementById('timestamp');
 
-    loadingIndicator.classList.add('active');
+    loading.classList.add('active');
     fetchBtn.disabled = true;
     timestampDiv.classList.remove('active');
 
     try {
-        console.log(`Fetching data for ${cityName}...`);
-
         // Fetch atmospheric data from Open-Meteo
         const data = await fetchCityData(cityName);
-
-        console.log('Received data:', data);
 
         // Format data for our calculations
         const formattedData = formatForCalculations(data);
@@ -159,31 +156,21 @@ async function fetchLiveData() {
 
         // Show timestamp
         const timestamp = new Date(data.timestamp);
-        timestampDiv.innerHTML = `
-            <strong>📡 Live Data Retrieved:</strong> ${data.city}, ${data.state}<br>
-            <small>Time: ${timestamp.toLocaleString()} | Source: Open-Meteo API</small>
-        `;
+        timestampDiv.innerHTML = `Data from ${data.city}, ${data.state} at ${timestamp.toLocaleTimeString()} (Open-Meteo API)`;
         timestampDiv.classList.add('active');
 
         // Hide loading indicator
-        loadingIndicator.classList.remove('active');
+        loading.classList.remove('active');
         fetchBtn.disabled = false;
 
-        // Auto-calculate indices with the new data
+        // Auto-calculate indices
         calculateIndices();
 
-        // Success message
-        console.log(`Successfully loaded data for ${cityName}`);
-
     } catch (error) {
-        console.error('Error fetching data:', error);
-
-        // Hide loading indicator
-        loadingIndicator.classList.remove('active');
+        console.error('Error:', error);
+        loading.classList.remove('active');
         fetchBtn.disabled = false;
-
-        // Show error message
-        alert(`Failed to fetch data for ${cityName}. Error: ${error.message}\n\nPlease try again or select a different city.`);
+        alert(`Failed to fetch data: ${error.message}`);
     }
 }
 
@@ -327,45 +314,25 @@ function displayResults(ki, li, ssi, risk) {
         <div class="result-card">
             <h3>K-Index</h3>
             <div class="result-value">${ki.toFixed(1)}</div>
-            <div class="result-interpretation">${interpretKIndex(ki)}</div>
-            <div class="risk-indicator">
-                <div class="risk-level" style="width: ${Math.min(100, ki * 2)}%; background: ${getKIndexColor(ki)};">
-                    ${ki < 10 ? '' : ki.toFixed(0)}
-                </div>
-            </div>
+            <p>${interpretKIndex(ki)}</p>
         </div>
 
         <div class="result-card">
             <h3>Lifted Index</h3>
             <div class="result-value">${li.toFixed(1)}°C</div>
-            <div class="result-interpretation">${interpretLiftedIndex(li)}</div>
-            <div class="risk-indicator">
-                <div class="risk-level" style="width: ${Math.max(0, Math.min(100, (2 - li) / 8 * 100))}%; background: ${getLiftedIndexColor(li)};">
-                    ${Math.abs(li) < 1 ? '' : li.toFixed(0) + '°'}
-                </div>
-            </div>
+            <p>${interpretLiftedIndex(li)}</p>
         </div>
 
         <div class="result-card">
             <h3>Showalter Index</h3>
             <div class="result-value">${ssi.toFixed(1)}°C</div>
-            <div class="result-interpretation">${interpretShowalterIndex(ssi)}</div>
-            <div class="risk-indicator">
-                <div class="risk-level" style="width: ${Math.max(0, Math.min(100, (3 - ssi) / 9 * 100))}%; background: ${getLiftedIndexColor(ssi)};">
-                    ${Math.abs(ssi) < 1 ? '' : ssi.toFixed(0) + '°'}
-                </div>
-            </div>
+            <p>${interpretShowalterIndex(ssi)}</p>
         </div>
 
-        <div class="result-card" style="border-left: 5px solid ${getRiskColor(risk)};">
-            <h3>Composite Risk Score</h3>
+        <div class="result-card">
+            <h3>Composite Risk</h3>
             <div class="result-value">${risk.toFixed(1)}/10</div>
-            <div class="result-interpretation">${getRiskLevel(risk)}</div>
-            <div class="risk-indicator">
-                <div class="risk-level" style="width: ${risk * 10}%; background: ${getRiskColor(risk)};">
-                    ${getRiskLevel(risk)}
-                </div>
-            </div>
+            <p>${getRiskLevel(risk)}</p>
         </div>
     `;
 }
