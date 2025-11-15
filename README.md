@@ -1,6 +1,8 @@
 # Thunderstorm Composite Model - Australia
 
-A Python-based system for calculating and visualizing thunderstorm risk across Australia using atmospheric stability indices.
+A comprehensive system for calculating and visualizing thunderstorm risk across Australia using atmospheric stability indices.
+
+**🌐 [Try the Interactive Web App](https://yourusername.github.io/Thunderstorm-composite-model/)** _(Replace with your actual GitHub Pages URL)_
 
 ## Overview
 
@@ -12,20 +14,44 @@ This project implements three key meteorological stability indices used for thun
 
 ## Features
 
+### Web Application (No Installation Required!)
+- 🌐 **Interactive web interface** - Run directly in your browser
+- 🗺️ **Live risk maps** - Interactive map of Australia with city-level analysis
+- 📊 **Real-time calculations** - Instant stability index calculations
+- 📱 **Mobile-friendly** - Works on phones, tablets, and desktops
+- 🎨 **Visual indicators** - Color-coded risk levels and interpretations
+- 💾 **Preset scenarios** - Quick-load common atmospheric conditions
+
+### Python Application
 - Calculate all three stability indices from atmospheric data
 - Generate detailed risk maps for Australia
 - Composite risk scoring combining all indices
 - High-resolution geographic visualization
 - Statistical analysis of risk distribution
 
-## Installation
+## Quick Start
 
-### Prerequisites
+### Option 1: Web Application (Recommended)
+
+Simply visit the GitHub Pages site (no installation required):
+**[https://yourusername.github.io/Thunderstorm-composite-model/](https://yourusername.github.io/Thunderstorm-composite-model/)**
+
+Or open `index.html` directly in your web browser.
+
+Features:
+- Enter atmospheric data manually or use preset scenarios
+- Calculate stability indices instantly
+- Generate interactive risk maps for Australian cities
+- No Python or dependencies needed!
+
+### Option 2: Python Application
+
+#### Prerequisites
 
 - Python 3.8 or higher
 - pip package manager
 
-### Setup
+#### Setup
 
 1. Clone the repository:
 ```bash
@@ -39,6 +65,16 @@ pip install -r requirements.txt
 ```
 
 ## Usage
+
+### Web Application
+
+1. Open `index.html` in your browser or visit the GitHub Pages site
+2. Choose a preset scenario or enter custom atmospheric data
+3. Click "Calculate Risk" to see stability indices
+4. Click "Generate Map" to create an interactive risk map
+5. Click on city markers for detailed analysis
+
+### Python Application
 
 ### Generate Sample Maps
 
@@ -127,8 +163,13 @@ print(f"Composite Risk Score: {risk:.1f}/10")
 
 ```
 Thunderstorm-composite-model/
-├── stability_indices.py          # Core calculation functions
-├── create_storm_risk_map.py      # Map generation script
+├── index.html                    # Web application (GitHub Pages)
+├── app.js                        # Web app UI logic
+├── stability-calculations.js     # JavaScript calculation functions
+├── _config.yml                   # GitHub Pages configuration
+├── stability_indices.py          # Python calculation functions
+├── create_storm_risk_map.py      # Python map generation script
+├── example_usage.py              # Python usage examples
 ├── requirements.txt              # Python dependencies
 ├── README.md                     # This file
 └── output/                       # Generated maps (created on first run)
