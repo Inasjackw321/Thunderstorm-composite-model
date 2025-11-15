@@ -292,6 +292,120 @@
             transform: scale(1.05);
         }
 
+        .live-data-section {
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border: 2px solid #00acc1;
+        }
+
+        .live-data-section h3 {
+            color: #006064;
+            margin-bottom: 15px;
+        }
+
+        .city-selector-group {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .city-selector-group > div {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .city-selector-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00acc1;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .city-selector-group select:focus {
+            outline: none;
+            border-color: #006064;
+            box-shadow: 0 0 0 3px rgba(0, 172, 193, 0.2);
+        }
+
+        .btn-live-data {
+            background: linear-gradient(135deg, #00acc1 0%, #00838f 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(0, 172, 193, 0.4);
+        }
+
+        .btn-live-data:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 172, 193, 0.6);
+        }
+
+        .btn-live-data:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading-indicator {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+            color: #006064;
+            font-weight: 500;
+        }
+
+        .loading-indicator.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #00acc1;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .data-timestamp {
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            font-size: 0.9em;
+            color: #006064;
+            text-align: center;
+            display: none;
+        }
+
+        .data-timestamp.active {
+            display: block;
+        }
+
         @media (max-width: 768px) {
             header h1 {
                 font-size: 1.8em;
@@ -303,6 +417,14 @@
 
             #map {
                 height: 400px;
+            }
+
+            .city-selector-group {
+                flex-direction: column;
+            }
+
+            .city-selector-group > div {
+                width: 100%;
             }
         }
     </style>
@@ -321,7 +443,68 @@
 
                 <div class="info-box">
                     <h3>ℹ️ Quick Start</h3>
-                    <p>Enter atmospheric data or use a preset scenario below. All temperatures in Celsius.</p>
+                    <p>Fetch real-time data from Open-Meteo API, use preset scenarios, or enter atmospheric data manually. All temperatures in Celsius.</p>
+                </div>
+
+                <!-- Live Data Section -->
+                <div class="live-data-section">
+                    <h3>🌐 Fetch Live Weather Data</h3>
+                    <p style="margin-bottom: 15px; color: #006064;">Get real atmospheric data from Open-Meteo for any Australian city</p>
+
+                    <div class="city-selector-group">
+                        <div>
+                            <label for="citySelect" style="display: block; margin-bottom: 8px; font-weight: 600; color: #006064;">Select City:</label>
+                            <select id="citySelect">
+                                <option value="">-- Choose a city --</option>
+                                <optgroup label="New South Wales">
+                                    <option value="Sydney">Sydney</option>
+                                    <option value="Newcastle">Newcastle</option>
+                                    <option value="Canberra">Canberra (ACT)</option>
+                                </optgroup>
+                                <optgroup label="Queensland">
+                                    <option value="Brisbane">Brisbane</option>
+                                    <option value="Cairns">Cairns</option>
+                                    <option value="Gold Coast">Gold Coast</option>
+                                    <option value="Townsville">Townsville</option>
+                                    <option value="Mackay">Mackay</option>
+                                    <option value="Rockhampton">Rockhampton</option>
+                                    <option value="Bundaberg">Bundaberg</option>
+                                </optgroup>
+                                <optgroup label="Victoria">
+                                    <option value="Melbourne">Melbourne</option>
+                                </optgroup>
+                                <optgroup label="South Australia">
+                                    <option value="Adelaide">Adelaide</option>
+                                </optgroup>
+                                <optgroup label="Western Australia">
+                                    <option value="Perth">Perth</option>
+                                    <option value="Geraldton">Geraldton</option>
+                                    <option value="Broome">Broome</option>
+                                    <option value="Port Hedland">Port Hedland</option>
+                                    <option value="Kalgoorlie">Kalgoorlie</option>
+                                </optgroup>
+                                <optgroup label="Northern Territory">
+                                    <option value="Darwin">Darwin</option>
+                                    <option value="Alice Springs">Alice Springs</option>
+                                </optgroup>
+                                <optgroup label="Tasmania">
+                                    <option value="Hobart">Hobart</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div>
+                            <button class="btn-live-data" id="fetchDataBtn" onclick="fetchLiveData()">
+                                📡 Fetch Live Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="loading-indicator" id="loadingIndicator">
+                        <div class="spinner"></div>
+                        <span>Fetching atmospheric data...</span>
+                    </div>
+
+                    <div class="data-timestamp" id="dataTimestamp"></div>
                 </div>
 
                 <h3 style="margin: 20px 0;">Preset Scenarios</h3>
@@ -385,7 +568,8 @@
 
                 <div class="button-group">
                     <button class="btn-primary" onclick="calculateIndices()">🔬 Calculate Risk</button>
-                    <button class="btn-secondary" onclick="generateMap()">🗺️ Generate Map</button>
+                    <button class="btn-secondary" onclick="generateMap()">🗺️ Sample Data Map</button>
+                    <button class="btn-secondary" onclick="generateLiveDataMap()">📡 Live Data Map</button>
                     <button class="btn-secondary" onclick="resetInputs()">🔄 Reset</button>
                 </div>
             </div>
@@ -459,6 +643,9 @@
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Open-Meteo API Integration -->
+    <script src="open-meteo-api.js"></script>
 
     <!-- Calculation Script -->
     <script src="stability-calculations.js"></script>

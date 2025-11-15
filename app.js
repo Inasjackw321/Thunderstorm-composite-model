@@ -114,6 +114,179 @@ function resetInputs() {
     document.getElementById('dewpoint_850').value = 15;
 
     document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('dataTimestamp').classList.remove('active');
+}
+
+/**
+ * Fetch live atmospheric data from Open-Meteo API
+ */
+async function fetchLiveData() {
+    const citySelect = document.getElementById('citySelect');
+    const cityName = citySelect.value;
+
+    if (!cityName) {
+        alert('Please select a city first');
+        return;
+    }
+
+    // Show loading indicator
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const fetchBtn = document.getElementById('fetchDataBtn');
+    const timestampDiv = document.getElementById('dataTimestamp');
+
+    loadingIndicator.classList.add('active');
+    fetchBtn.disabled = true;
+    timestampDiv.classList.remove('active');
+
+    try {
+        console.log(`Fetching data for ${cityName}...`);
+
+        // Fetch atmospheric data from Open-Meteo
+        const data = await fetchCityData(cityName);
+
+        console.log('Received data:', data);
+
+        // Format data for our calculations
+        const formattedData = formatForCalculations(data);
+
+        // Populate input fields
+        document.getElementById('temp_surface').value = formattedData.temp_surface.toFixed(1);
+        document.getElementById('temp_850').value = formattedData.temp_850.toFixed(1);
+        document.getElementById('temp_500').value = formattedData.temp_500.toFixed(1);
+        document.getElementById('dewpoint_surface').value = formattedData.dewpoint_surface.toFixed(1);
+        document.getElementById('dewpoint_700').value = formattedData.dewpoint_700.toFixed(1);
+        document.getElementById('dewpoint_850').value = formattedData.dewpoint_850.toFixed(1);
+
+        // Show timestamp
+        const timestamp = new Date(data.timestamp);
+        timestampDiv.innerHTML = `
+            <strong>📡 Live Data Retrieved:</strong> ${data.city}, ${data.state}<br>
+            <small>Time: ${timestamp.toLocaleString()} | Source: Open-Meteo API</small>
+        `;
+        timestampDiv.classList.add('active');
+
+        // Hide loading indicator
+        loadingIndicator.classList.remove('active');
+        fetchBtn.disabled = false;
+
+        // Auto-calculate indices with the new data
+        calculateIndices();
+
+        // Success message
+        console.log(`Successfully loaded data for ${cityName}`);
+
+    } catch (error) {
+        console.error('Error fetching data:', error);
+
+        // Hide loading indicator
+        loadingIndicator.classList.remove('active');
+        fetchBtn.disabled = false;
+
+        // Show error message
+        alert(`Failed to fetch data for ${cityName}. Error: ${error.message}\n\nPlease try again or select a different city.`);
+    }
+}
+
+/**
+ * Generate live data map with all Australian cities
+ */
+async function generateLiveDataMap() {
+    // Show loading message
+    alert('Fetching live data for all Australian cities. This may take a moment...');
+
+    try {
+        // Fetch data for all cities
+        const allCityData = await fetchAllAustralianCities();
+
+        // Clear existing markers
+        map.eachLayer(layer => {
+            if (layer instanceof L.CircleMarker) {
+                map.removeLayer(layer);
+            }
+        });
+
+        // Add markers for each city with live data
+        allCityData.forEach(cityData => {
+            const formattedData = formatForCalculations(cityData);
+
+            // Calculate indices
+            const ki = calculateKIndex(
+                formattedData.temp_surface,
+                formattedData.temp_850,
+                formattedData.temp_500,
+                formattedData.dewpoint_surface,
+                formattedData.dewpoint_700
+            );
+            const li = calculateLiftedIndex(
+                formattedData.temp_surface,
+                formattedData.temp_500,
+                formattedData.dewpoint_surface
+            );
+            const ssi = calculateShowalterIndex(
+                formattedData.temp_850,
+                formattedData.temp_500,
+                formattedData.dewpoint_850
+            );
+            const risk = calculateCompositeRisk(ki, li, ssi);
+
+            // Create marker
+            const color = getRiskColor(risk);
+            const radius = 10 + risk * 3;
+
+            const circle = L.circleMarker([cityData.latitude, cityData.longitude], {
+                radius: radius,
+                fillColor: color,
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.7
+            }).addTo(map);
+
+            // Create popup with live data
+            const timestamp = new Date(cityData.timestamp);
+            circle.bindPopup(`
+                <div style="min-width: 220px;">
+                    <h3 style="margin: 0 0 10px 0; color: #2a5298;">${cityData.city}, ${cityData.state}</h3>
+                    <div style="background: #e7f3ff; padding: 8px; border-radius: 5px; margin-bottom: 8px; font-size: 0.85em;">
+                        <strong>📡 Live Data</strong><br>
+                        ${timestamp.toLocaleTimeString()}
+                    </div>
+                    <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                        <strong>Atmospheric Data:</strong><br>
+                        Surface: ${formattedData.temp_surface.toFixed(1)}°C / ${formattedData.dewpoint_surface.toFixed(1)}°C<br>
+                        850mb: ${formattedData.temp_850.toFixed(1)}°C / ${formattedData.dewpoint_850.toFixed(1)}°C<br>
+                        500mb: ${formattedData.temp_500.toFixed(1)}°C
+                    </div>
+                    <div style="background: #e7f3ff; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                        <strong>Stability Indices:</strong><br>
+                        K-Index: <strong>${ki.toFixed(1)}</strong><br>
+                        Lifted Index: <strong>${li.toFixed(1)}°C</strong><br>
+                        Showalter Index: <strong>${ssi.toFixed(1)}°C</strong>
+                    </div>
+                    <div style="background: ${color}; color: white; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold;">
+                        ${getRiskLevel(risk)}<br>
+                        Score: ${risk.toFixed(1)}/10
+                    </div>
+                </div>
+            `);
+
+            circle.bindTooltip(`${cityData.city}: ${getRiskLevel(risk)}`, {
+                permanent: false,
+                direction: 'top'
+            });
+        });
+
+        // Add legend
+        addMapLegend();
+
+        alert(`Live data map generated successfully!\n${allCityData.length} cities updated with real atmospheric data from Open-Meteo.`);
+
+    } catch (error) {
+        console.error('Error generating live data map:', error);
+        alert(`Failed to generate live data map: ${error.message}\n\nFalling back to sample data.`);
+        // Fallback to sample data
+        generateMap();
+    }
 }
 
 /**

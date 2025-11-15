@@ -16,11 +16,13 @@ This project implements three key meteorological stability indices used for thun
 
 ### Web Application (No Installation Required!)
 - 🌐 **Interactive web interface** - Run directly in your browser
+- 📡 **Live weather data** - Fetch real atmospheric data from Open-Meteo API
 - 🗺️ **Live risk maps** - Interactive map of Australia with city-level analysis
 - 📊 **Real-time calculations** - Instant stability index calculations
 - 📱 **Mobile-friendly** - Works on phones, tablets, and desktops
 - 🎨 **Visual indicators** - Color-coded risk levels and interpretations
 - 💾 **Preset scenarios** - Quick-load common atmospheric conditions
+- 🏙️ **20+ Australian cities** - Real data for major cities across all states
 
 ### Python Application
 - Calculate all three stability indices from atmospheric data
@@ -68,10 +70,21 @@ pip install -r requirements.txt
 
 ### Web Application
 
+#### Using Live Weather Data
+
 1. Open `index.html` in your browser or visit the GitHub Pages site
-2. Choose a preset scenario or enter custom atmospheric data
-3. Click "Calculate Risk" to see stability indices
-4. Click "Generate Map" to create an interactive risk map
+2. Select an Australian city from the dropdown menu
+3. Click "📡 Fetch Live Data" to retrieve real atmospheric data from Open-Meteo API
+4. The input fields will auto-populate with current conditions
+5. Risk calculations are performed automatically
+6. Click "📡 Live Data Map" to see real-time risk across all Australian cities
+
+#### Using Preset Scenarios or Manual Input
+
+1. Choose a preset scenario (Stable, Moderate, Severe, Tropical)
+2. Or enter custom atmospheric data manually
+3. Click "🔬 Calculate Risk" to see stability indices
+4. Click "🗺️ Sample Data Map" to create an interactive map with sample data
 5. Click on city markers for detailed analysis
 
 ### Python Application
@@ -165,8 +178,10 @@ print(f"Composite Risk Score: {risk:.1f}/10")
 Thunderstorm-composite-model/
 ├── index.html                    # Web application (GitHub Pages)
 ├── app.js                        # Web app UI logic
+├── open-meteo-api.js             # Open-Meteo API integration
 ├── stability-calculations.js     # JavaScript calculation functions
 ├── _config.yml                   # GitHub Pages configuration
+├── DEPLOYMENT.md                 # GitHub Pages deployment guide
 ├── stability_indices.py          # Python calculation functions
 ├── create_storm_risk_map.py      # Python map generation script
 ├── example_usage.py              # Python usage examples
@@ -175,14 +190,33 @@ Thunderstorm-composite-model/
 └── output/                       # Generated maps (created on first run)
 ```
 
+## Data Sources
+
+### Open-Meteo API
+
+The web application uses the free [Open-Meteo API](https://open-meteo.com/) for real-time atmospheric data:
+
+- **Temperature** at multiple pressure levels (surface, 850mb, 700mb, 500mb)
+- **Relative Humidity** at pressure levels (converted to dewpoint)
+- **No API key required** - Free and open for non-commercial use
+- **Updated hourly** - Fresh data for accurate forecasting
+- **Global coverage** - Works for all Australian cities
+
+#### Data Processing
+
+1. API returns temperature and relative humidity at pressure levels
+2. Dewpoint is calculated using the Magnus-Tetens formula
+3. Data is formatted for stability index calculations
+4. Results are displayed with timestamp and source attribution
+
 ## Future Enhancements
 
 Potential improvements for this project:
 
-1. **Real-time Data Integration**
+1. **Additional Data Sources**
    - Connect to ERA5 reanalysis data
    - Integrate GFS forecast model data
-   - Automatic data download and processing
+   - Add Bureau of Meteorology (BOM) data
 
 2. **Additional Indices**
    - CAPE (Convective Available Potential Energy)
